@@ -1,0 +1,10 @@
+<section>
+    <form class="form" [formGroup]="searchForm">
+        <mat-form-field >
+            <mat-label>Search for Playlists</mat-label>
+            <input formControlName="value" matInput placeholder="Van Halen" [value]="value">
+            <mat-error>{{checkForErrorsIn(searchForm.controls['value'])}}</mat-error>
+        </mat-form-field>        
+    </form>
+    <button mat-flat-button color="secondary"  (click)="search()">Search</button>
+</section>

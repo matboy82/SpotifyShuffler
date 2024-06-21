@@ -11,15 +11,11 @@ export class PlaylistService {
   constructor(private http: HttpClient, private spotifyService: SpotifyService) { }
 
   public getPlaylistTracks(playlistId: string): Observable<any> {
-    const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-    const headers = this.spotifyService.getAuthHeaders();
-    return this.http.get(url, { headers });
+    return new Observable;
   }  
 
   public getPlaylists(): Observable<any> {
-    const url = 'https://api.spotify.com/v1/me/playlists';
-    const headers = this.spotifyService.getAuthHeaders();
-    return this.http.get(url, { headers });
+    return new Observable;
   }
 
   public shuffleTracks(tracks: any[]): any[] {
