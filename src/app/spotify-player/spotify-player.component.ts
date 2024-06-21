@@ -38,26 +38,29 @@ export class SpotifyPlayerComponent implements OnInit {
     this.playlistService.songs.set(songs);
   }
   
-
-  player() {
-    // add shuffled songs to player
-
-    const shuffledSongs = this.playlistService.shuffleTracks(this.songs);
-
-    console.log(shuffledSongs);
-
-  //  this.sdk.player.  addSongsToQueue(shuffledSongs);
-  //  this.sdk.player.
-  }
-
   
 
-  playTrack(track: any): void {
-    // Implement playback logic here
+  playerInit() {
+    // shuffle songs
+    const shuffledSongs = this.playlistService.shuffleTracks(this.songs);
+    console.log(shuffledSongs);
+    console.log(this.songs);
+    
+
+    this.sdk.player.getAvailableDevices().then((data) => {  
+      console.log(data);
+      const device = data.devices[0];
+      console.log(device.id);
+      this.sdk.player.startResumePlayback(device.id as string, undefined, this.songs.map((song) => song.track.uri), undefined, 0).then((data) => {
+        console.log(data);
+      });
+    });
   }
 
   pauseTrack(): void {
-    // Implement pause logic here
+  //  this.sdk.player.pausePlayback().then((data) => {
+  //    console.log(data);
+  //  })
   }
 
   nextTrack(): void {
