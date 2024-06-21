@@ -1,28 +1,29 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, inject, input } from '@angular/core';
 import { SpotifyService } from '../spotify.service';
 import { PlaylistService } from '../playlist.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-spotify-player',
   standalone: true,
   imports: [],
   templateUrl: './spotify-player.component.html',
-  styleUrl: './spotify-player.component.scss'
+  styleUrl: './spotify-player.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SpotifyPlayerComponent implements OnInit {
   
-  @Input() playlistId = '';
+        
+@Input() playlistId!: string;   
 
   tracks: any[] = [];
   shuffledTracks: any[] = [];
 
   constructor(private spotifyService: SpotifyService, private playlistService: PlaylistService) { }
 
-  ngOnInit(): void { }
-
-  setPlaylist(playlistId: string): void {
-    this.playlistId = playlistId;
+  ngOnInit(): void {
   }
+
 
   playTrack(track: any): void {
     // Implement playback logic here
