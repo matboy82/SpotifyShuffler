@@ -1,1 +1,11 @@
-<p>spotify-player works!</p>
+@for (song of songs; track song) {
+    <div>
+        <mat-card appearance="outlined">
+            <mat-card-title>{{ song.track.name }}</mat-card-title>
+            <mat-card-subtitle>{{ song.track.artists[0].name }}</mat-card-subtitle>
+            <mat-card-actions>
+                <button mat-raised-button color="primary" (click)="player()">Play</button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
+}

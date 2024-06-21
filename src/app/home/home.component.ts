@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { SpotifyApi } from '@spotify/web-api-ts-sdk';
 import { PlaylistItem } from '../interfaces/playlist-item';
 import { PlaylistService } from '../playlist.service';
@@ -13,7 +13,8 @@ import { SearchPlaylistsComponent } from '../search-playlists/search-playlists.c
   standalone: true,
   imports: [RouterOutlet, MaterialModule, PlaylistCardComponent, SearchPlaylistsComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrl: './home.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit{
   title = 'Spotify Shuffler';
