@@ -1,11 +1,18 @@
-@for (song of songs; track song) {
-    <div>
-        <mat-card appearance="outlined">
-            <mat-card-title>{{ song.track.name }}</mat-card-title>
-            <mat-card-subtitle>{{ song.track.artists[0].name }}</mat-card-subtitle>
-            <mat-card-actions>
-                <button mat-raised-button color="primary" (click)="playerInit()">Play</button>
-            </mat-card-actions>
-        </mat-card>
-    </div>
-}
+<section class="container">
+    <section class="player-controls">
+        <button mat-stroked-button color="primary" (click)="playerInit()">Shuffle Playlist</button>
+        <button mat-stroked-button color="primary" (click)="playTracks()">Play</button>
+        <button mat-stroked-button color="primary" (click)="pauseTrack()">Pause</button>
+        <button mat-stroked-button color="primary" (click)="nextTrack()">Next</button>
+        <button mat-stroked-button color="primary" (click)="previousTrack()">Previous</button>
+
+    </section>
+    <section class="song-queue">
+        @defer (when songs) {
+            <app-track-list [songs]="songs"></app-track-list>
+        }@loading (after 100ms; minimum 1s) {
+            <mat-spinner></mat-spinner>
+        }
+    </section>
+</section>
+

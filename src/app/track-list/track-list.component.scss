@@ -1,0 +1,13 @@
+mat-card {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    
+}
+
+mat-list {
+    flex-grow: 1;
+    border: 3px solid black;
+    overflow: auto;
+}

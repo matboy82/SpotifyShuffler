@@ -1,0 +1,14 @@
+<section>
+    <h1>Track List:</h1>
+</section>
+
+@for (song of songs(); track song) {
+    
+        <mat-card appearance="outlined">
+            <img mat-card-image width="150px" src="{{song.track.album.images[0].url}}">
+            <mat-card-content>
+                <mat-card-title>{{ song.track.name }}</mat-card-title>
+                <mat-card-subtitle>{{ song.track.artists[0].name }}</mat-card-subtitle>
+            </mat-card-content>            
+        </mat-card>
+}
