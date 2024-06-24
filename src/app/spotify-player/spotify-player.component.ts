@@ -18,17 +18,19 @@ export class SpotifyPlayerComponent implements OnInit {
        
   @Input() playlistId!: string;   
 
-  currentDevice!: Device; //todo this should be gotten from device service
-    
+  currentDevice!: Device;
+  playing!: boolean;
   sdk: SpotifyApi = inject(SpotifyService).getSdk();
   playlistService = inject(PlaylistService);
   deviceService = inject(DeviceService);
-
+  
   ngOnInit(): void {
     this.playlistService.getPlaylistTracks(this.playlistId);
     this.deviceService.getDevices().subscribe((devices) => {
-      console.log(devices);
       this.currentDevice = devices[0];
+      this.sdk.player.getPlaybackState().then((data) => {
+        this.playing = data?.is_playing;
+      });
     })
   }
 
@@ -41,34 +43,57 @@ export class SpotifyPlayerComponent implements OnInit {
   }
   
   playerInit() {
-    // shuffle songs
-    const shuffledSongs = this.playlistService.shuffleTracks(this.songs);
-    console.log(shuffledSongs);
     console.log(this.songs);
-    console.log(this.currentDevice);
+    this.playlistService.shuffleTracks(this.songs); // it shuffles on the signal, no need to return a new array
   }
 
   playTracks(): void {
-    this.sdk.player.startResumePlayback(this.currentDevice.id as string, undefined, this.songs.map((song) => song.track.uri), undefined, 0).then((data) => {
-      console.log(data);
-    });  
+    if(!this.currentDevice) {
+      alert('Start a device first');
+      return;
+    }
+    this.playing = true;
+    console.log(this.songs);
+    for(const song of this.songs) {
+      console.log(song.track.uri);
+      this.sdk.player.addItemToPlaybackQueue(song.track.uri, this.currentDevice.id as string);
+    }
+    this.sdk.player.startResumePlayback(this.currentDevice.id as string, undefined, undefined, undefined, 0).then((data) => {      
+      this.sdk.player.getPlaybackState().then((data) => {
+        this.playing = data?.is_playing;
+      }).catch((err) => {
+        console.log(err);
+      });
+    });
   }
 
   pauseTrack(): void {
-    this.sdk.player.pausePlayback(this.currentDevice.id as string).then((data) => {
-      console.log(data);
+    if(!this.currentDevice) {
+      alert('Start a device first');
+      return;
+    }
+    this.playing = false;
+    this.sdk.player.pausePlayback(this.currentDevice.id as string).then((data) => {      
     })
   }
 
   nextTrack(): void {
+    if(!this.currentDevice) {
+      alert('Start a device first');
+      return;
+    }
+    this.playing = true;
     this.sdk.player.skipToNext(this.currentDevice.id as string).then((data) => {
-      console.log(data);
     });
   }
 
   previousTrack(): void {
+    if(!this.currentDevice) {
+      alert('Start a device first');
+      return;
+    }
+    this.playing = true;
     this.sdk.player.skipToPrevious(this.currentDevice.id as string).then((data) => {
-      console.log(data);
     })
   }
 }

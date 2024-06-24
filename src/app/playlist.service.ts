@@ -25,10 +25,12 @@ export class PlaylistService {
       console.log(data.items);
       const newSongs = data.items as unknown as PlaylistedTrack<Track>[];
       this.songs.set(newSongs);
+      this.getTrackInfo(newSongs[0].track.id);
     });
   }  
 
   public shuffleTracks(tracks: PlaylistedTrack<Track>[]): PlaylistedTrack<Track>[] {
+    console.log(tracks);
     return this.shuffleArray(tracks);
   }
 
@@ -57,4 +59,10 @@ export class PlaylistService {
       this.lists.set(newLists);
     });
   }  
+
+  public getTrackInfo(trackId: string) {
+    this.sdk.tracks.get(trackId).then((data) => {
+      console.log(data);
+    });
+  }
 }

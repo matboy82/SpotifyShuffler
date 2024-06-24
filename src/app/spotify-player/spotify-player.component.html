@@ -1,18 +1,23 @@
 <section class="container">
     <section class="player-controls">
-        <button mat-stroked-button color="primary" (click)="playerInit()">Shuffle Playlist</button>
-        <button mat-stroked-button color="primary" (click)="playTracks()">Play</button>
-        <button mat-stroked-button color="primary" (click)="pauseTrack()">Pause</button>
-        <button mat-stroked-button color="primary" (click)="nextTrack()">Next</button>
-        <button mat-stroked-button color="primary" (click)="previousTrack()">Previous</button>
-
+        <button mat-fab color="primary" (click)="playerInit()"><mat-icon>shuffle</mat-icon></button>
+        <button mat-fab color="primary" (click)="previousTrack()"><mat-icon>skip_previous</mat-icon></button>
+        @if(playing) {
+            <button mat-fab color="primary" (click)="pauseTrack()"><mat-icon>pause</mat-icon></button>
+        }@else {
+            <button mat-fab color="primary" (click)="playTracks()"><mat-icon>play_arrow</mat-icon></button>
+        }
+        <button mat-fab color="primary" (click)="nextTrack()"><mat-icon>skip_next</mat-icon></button>
     </section>
-    <section class="song-queue">
+
+    <!--  TODO break out into its own component-->
+     <section class="song-queue">
         @defer (when songs) {
             <app-track-list [songs]="songs"></app-track-list>
         }@loading (after 100ms; minimum 1s) {
             <mat-spinner></mat-spinner>
         }
     </section>
+    
 </section>
 

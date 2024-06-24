@@ -1,17 +1,18 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { SpotifyApi, AuthorizationCodeWithPKCEStrategy } from '@spotify/web-api-ts-sdk';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Sets up the Spotify SDK and returns the instance.
+ */
 export class SpotifyService {
   private clientId = '7ca110f3b9934a4e9889f3a85fef87b3';
   private clientSecret = 'add2833f0c8b47918f1f38d250353dea';
   sdk!: SpotifyApi;
   
-  constructor(private http: HttpClient) { 
+  constructor() { 
     const scope = [
       'user-read-private',
       'user-read-email',
