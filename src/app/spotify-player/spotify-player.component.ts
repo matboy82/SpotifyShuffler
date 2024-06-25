@@ -33,18 +33,10 @@ export class SpotifyPlayerComponent implements OnInit {
       });
     })
   }
-
-  get songs(): PlaylistedTrack<Track>[] {
-    return this.playlistService.songs();
-  }
-
-  set songs(songs: PlaylistedTrack<Track>[]) {
-    this.playlistService.songs.set(songs);
-  }
   
   playerInit() {
-    console.log(this.songs);
-    this.playlistService.shuffleTracks(this.songs); // it shuffles on the signal, no need to return a new array
+    console.log(this.playlistService.songs());
+    this.playlistService.shuffleTracks(this.playlistService.songs()); // it shuffles on the signal, no need to return a new array
   }
 
   playTracks(): void {
@@ -52,19 +44,26 @@ export class SpotifyPlayerComponent implements OnInit {
       alert('Start a device first');
       return;
     }
+
     this.playing = true;
-    console.log(this.songs);
-    for(const song of this.songs) {
-      console.log(song.track.uri);
-      this.sdk.player.addItemToPlaybackQueue(song.track.uri, this.currentDevice.id as string);
-    }
-    this.sdk.player.startResumePlayback(this.currentDevice.id as string, undefined, undefined, undefined, 0).then((data) => {      
-      this.sdk.player.getPlaybackState().then((data) => {
-        this.playing = data?.is_playing;
-      }).catch((err) => {
-        console.log(err);
+      console.log(this.playlistService.songs());
+      const songUrls = this.playlistService.songs().map((song) => song.track.uri);
+      this.sdk.player.startResumePlayback(this.currentDevice.id as string, undefined, songUrls, undefined, undefined).then((data) => {      
+        this.sdk.player.getPlaybackState().then((data) => {
+          this.playing = data?.is_playing;
+          console.log(data.shuffle_state);
+        
+        }).catch((err) => {
+          console.log(err);
+        });
       });
-    });
+    //this.sdk.player.togglePlaybackShuffle(false, this.currentDevice.id as string).then((data) => {
+    //  console.log(data);
+
+      
+    //});
+
+    
   }
 
   pauseTrack(): void {

@@ -52,6 +52,7 @@ export class HomeComponent implements OnInit{
     this.playlistId = playlistId;
 
     this.currentPlaylistInfo = this.playlists.find((p) => p.id === playlistId)!;
+    this.playlistService.playlist.set(this.currentPlaylistInfo);
     
   }
 }

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { SpotifyService } from './spotify.service';
-import { PlaylistedTrack, SpotifyApi, Track } from '@spotify/web-api-ts-sdk';
+import { Playlist, PlaylistedTrack, SpotifyApi, Track } from '@spotify/web-api-ts-sdk';
 import { PlaylistItem } from './interfaces/playlist-item';
 
 @Injectable({
@@ -13,8 +13,10 @@ export class PlaylistService {
   private sdk!: SpotifyApi;
   private playlists: PlaylistItem[] = [];
   private tracks!: PlaylistedTrack<Track>[]
+  private currentPlaylist: PlaylistItem = {} as PlaylistItem;
   public lists = signal(this.playlists);
   public songs = signal(this.tracks);
+  public playlist = signal<PlaylistItem>(this.currentPlaylist);
 
   constructor(private spotifyService: SpotifyService) {
     this.sdk = this.spotifyService.getSdk();
