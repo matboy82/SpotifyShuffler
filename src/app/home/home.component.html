@@ -11,7 +11,7 @@
       <button mat-stroked-button color="primary" (click)="getPlaylist()">Get User Playlists</button>
     </section>
     @if(currentPlaylistInfo) {
-      <app-spotify-player [playlistId]="currentPlaylistInfo.id"></app-spotify-player>
+      <app-spotify-player [showTrackList]="false" [playlistId]="currentPlaylistInfo.id"></app-spotify-player>
     }
   </section>
     

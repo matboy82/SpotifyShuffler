@@ -11,14 +11,16 @@
     </section>
 
     <!--  TODO break out into its own component-->
-    
-     <section class="song-queue">
-        @defer (when playlistService.songs()) {
-            <app-track-list [songs]="playlistService.songs()"></app-track-list>
-        }@loading (after 100ms; minimum 1s) {
-            <mat-spinner></mat-spinner>
-        }
-    </section>
+    @if(showTrackList != false) {
+        <section class="song-queue">
+            @defer (when playlistService.songs()) {
+                <app-track-list [songs]="playlistService.songs()"></app-track-list>
+            }@loading (after 100ms; minimum 1s) {
+                <mat-spinner></mat-spinner>
+            }
+        </section>
+    }
+     
 
 </section>
 

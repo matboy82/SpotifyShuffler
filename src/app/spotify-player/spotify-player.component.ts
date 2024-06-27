@@ -17,6 +17,7 @@ import { DeviceService } from '../device.service';
 export class SpotifyPlayerComponent implements OnInit {
        
   @Input() playlistId!: string;   
+  @Input() showTrackList!: boolean;
 
   currentDevice!: Device;
   playing!: boolean;
@@ -45,7 +46,9 @@ export class SpotifyPlayerComponent implements OnInit {
       return;
     }
 
-    this.playing = true;
+    
+    
+      this.playing = true;
       console.log(this.playlistService.songs());
       const songUrls = this.playlistService.songs().map((song) => song.track.uri);
       this.sdk.player.startResumePlayback(this.currentDevice.id as string, undefined, songUrls, undefined, undefined).then((data) => {      
@@ -57,12 +60,7 @@ export class SpotifyPlayerComponent implements OnInit {
           console.log(err);
         });
       });
-    //this.sdk.player.togglePlaybackShuffle(false, this.currentDevice.id as string).then((data) => {
-    //  console.log(data);
-
       
-    //});
-
     
   }
 
