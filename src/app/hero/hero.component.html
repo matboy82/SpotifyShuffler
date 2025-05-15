@@ -1,0 +1,15 @@
+<section class="hero">
+    <img width="200" height="200" src="/assets/spotlogo.png" />
+    <div class="text">
+      <h1 class="title">{{ title() }}</h1>
+      <p class="subtext">{{subtext()}}</p>
+    </div>
+    <section class="buttons">
+      <app-search-playlists></app-search-playlists>
+      <div class="divider"></div>
+      <button mat-stroked-button color="primary" (click)="getPlaylist()">Get User Playlists</button>
+    </section>
+    @if(currentPlaylistInfo) {
+      <app-spotify-player [playlistId]="currentPlaylistInfo.id"></app-spotify-player>
+    }
+</section>

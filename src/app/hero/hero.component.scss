@@ -1,0 +1,46 @@
+@import '../../theme.scss';
+
+.hero {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: $spotify-grey;
+}
+
+.hero img {
+    max-width: 100%;
+    height: auto;
+    background-color: $spotify-grey;
+    object-fit: contain;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.hero .text {
+    margin-left: 20px;
+    justify-self: left;
+    align-self: left;
+}
+
+.hero .title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.hero .subtext {
+    font-size: 16px;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.divider {
+    height: 10rem;
+    width: 1px;
+    background-color: #000;
+    margin: 0 10px;
+}

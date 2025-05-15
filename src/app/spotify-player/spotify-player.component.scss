@@ -1,29 +1,43 @@
-.container {
-    display: flex;
-    flex-direction: row;
-    
-    padding: 8px;
-}
+.player-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #121212;
+  padding: 24px;
 
-.song-queue {
+  .controls {
     display: flex;
-    flex-direction: column;
-    align-items: right;
-    justify-content: right;
-    height: 100%;
-    width: 35%;
-}
-
-.player-controls {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
     justify-content: center;
-    height: 100%;
-    width: 100%;
-    padding: 8px;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    padding: 16px;
+    background-color: #282828;
+    border-radius: 8px;
 
     button {
-        margin: 4px;
+      &.mat-fab {
+        background-color: #1DB954;
+        color: white;
+
+        &:hover {
+          background-color: #1ed760;
+        }
+
+        mat-icon {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+        }
+      }
     }
+  }
+
+  app-playing-info {
+    margin-bottom: 24px;
+  }
+
+  app-song-queue {
+    flex: 1;
+  }
 }

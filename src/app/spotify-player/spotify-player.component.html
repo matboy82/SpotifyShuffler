@@ -1,26 +1,11 @@
-<section class="container">
-    <section class="player-controls">
-        <button mat-fab color="primary" (click)="playerInit()"><mat-icon>shuffle</mat-icon></button>
-        <button mat-fab color="primary" (click)="previousTrack()"><mat-icon>skip_previous</mat-icon></button>
-        @if(playing) {
-            <button mat-fab color="primary" (click)="pauseTrack()"><mat-icon>pause</mat-icon></button>
-        }@else {
-            <button mat-fab color="primary" (click)="playTracks()"><mat-icon>play_arrow</mat-icon></button>
-        }
-        <button mat-fab color="primary" (click)="nextTrack()"><mat-icon>skip_next</mat-icon></button>
-    </section>
+<section class="player-container">
+    <app-playing-info [currentPlaylistInfo]="currentPlaylistInfo()"></app-playing-info>
 
-    <!--  TODO break out into its own component-->
-    @if(showTrackList != false) {
-        <section class="song-queue">
-            @defer (when playlistService.songs()) {
-                <app-track-list [songs]="playlistService.songs()"></app-track-list>
-            }@loading (after 100ms; minimum 1s) {
-                <mat-spinner></mat-spinner>
-            }
-        </section>
-    }
-     
+    <app-media-controls
+        [currentPlaylistInfo]="currentPlaylistInfo()"
+        [currentDevice]="currentDevice"
+    ></app-media-controls>
 
+    <app-track-list [songs]="playlistService.songs()"></app-track-list>
 </section>
 

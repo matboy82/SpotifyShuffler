@@ -1,5 +1,6 @@
 import { Owner } from "./owner";
 import { Image } from "./image";
+import { PlaylistedTrack, Track } from "@spotify/web-api-ts-sdk";
 
 export interface PlaylistItem {
     collaborative: boolean;
@@ -18,6 +19,7 @@ export interface PlaylistItem {
   tracks: {
     href: string;
     total: number;
+    items?: PlaylistedTrack<Track>[];
   };
   type: string;
   uri: string;

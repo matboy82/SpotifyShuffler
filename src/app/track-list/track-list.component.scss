@@ -1,13 +1,44 @@
-mat-card {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-start;
-    
+section {
+  padding: 16px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #ffffff;
+  }
 }
 
-mat-list {
-    flex-grow: 1;
-    border: 3px solid black;
-    overflow: auto;
+mat-card {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 12px !important;
+  
+  img {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 4px;
+    margin-right: 16px;
+  }
+
+  mat-card-content {
+    flex: 1;
+    margin: 0 !important;
+    
+    mat-card-title {
+      margin: 0 0 4px 0 !important;
+      line-height: 1.4 !important;
+    }
+
+    mat-card-subtitle {
+      margin: 0 !important;
+      line-height: 1.4 !important;
+    }
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
 }

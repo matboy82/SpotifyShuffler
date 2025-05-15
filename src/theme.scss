@@ -1,0 +1,84 @@
+// Spotify Colors
+$spotify-green: #1DB954;
+$spotify-green-hover: #1ed760;
+$spotify-black: #121212;
+$spotify-grey: #282828;
+$spotify-grey-hover: #3E3E3E;
+$spotify-text: #ffffff;
+$spotify-text-secondary: #B3B3B3;
+
+// Material Design overrides
+.mat-mdc-button-base {
+  &.mat-primary {
+    background-color: $spotify-green !important;
+    color: $spotify-text !important;
+
+    &:hover {
+      background-color: $spotify-green-hover !important;
+    }
+  }
+}
+
+// Global styles
+body {
+  background-color: #121212;  // Spotify's dark background
+  color: #ffffff;
+  margin: 0;
+  font-family: 'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+}
+
+// Custom component styles
+mat-card {
+  background-color: #282828 !important;  // Spotify's card background
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  transition: background-color 0.3s ease !important;
+
+  &:hover {
+    background-color: #3E3E3E !important;
+  }
+
+  mat-card-title {
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+
+  mat-card-subtitle {
+    color: #B3B3B3 !important;
+    font-size: 14px !important;
+  }
+}
+
+// Button styles
+.mat-mdc-fab.mat-primary {
+  background-color: #1DB954 !important;
+  &:hover {
+    background-color: #1ed760 !important;
+  }
+}
+
+// Progress spinner
+.mat-mdc-progress-spinner {
+  circle {
+    stroke: #1DB954 !important;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121212;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #535353;
+  border-radius: 6px;
+  
+  &:hover {
+    background: #7f7f7f;
+  }
+}

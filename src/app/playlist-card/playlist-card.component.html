@@ -1,9 +1,12 @@
 <mat-card appearance="outlined">
-    
     <mat-card-content>
-        <img mat-card-image width="250px" src="{{playlist.images[0].url}}">
-        <mat-card-title>{{playlist.name}}</mat-card-title>
-        <mat-card-subtitle>{{playlist.tracks.total}} tracks</mat-card-subtitle>
+        @if (playlist == null || playlist.images == null) {
+          <div class="no-image">No image available</div>  
+        } @else if (playlist.images.length > 0) {
+          <img mat-card-image width="250px" [src]="playlist.images[0].url" [alt]="playlist.name + ' cover'">  
+          <mat-card-title>{{playlist.name || 'Untitled Playlist'}}</mat-card-title>
+          <mat-card-subtitle>{{playlist.tracks ? playlist.tracks.total : 0}} tracks</mat-card-subtitle>
+        }
     </mat-card-content>
     <mat-card-footer>
     <mat-card-actions>

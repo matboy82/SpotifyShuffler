@@ -1,0 +1,10 @@
+<section class="controls">
+    <button mat-fab color="primary" (click)="playerInit()"><mat-icon>shuffle</mat-icon></button>
+    <button mat-fab color="primary" (click)="previousTrack()"><mat-icon>skip_previous</mat-icon></button>
+    @if(playing()) {
+        <button mat-fab color="primary" (click)="pauseTrack()"><mat-icon>pause</mat-icon></button>
+    }@else {
+        <button mat-fab color="primary" (click)="playTracks()"><mat-icon>play_arrow</mat-icon></button>
+    }
+    <button mat-fab color="primary" (click)="nextTrack()"><mat-icon>skip_next</mat-icon></button>
+</section>

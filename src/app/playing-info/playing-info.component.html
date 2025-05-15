@@ -1,0 +1,24 @@
+<section class="playing-info">
+    <div class="track-info">
+        <h3>{{currentPlaylistInfo()?.name}}</h3>
+        <p>{{currentPlaylistInfo()?.description}}</p>
+        @if (playerState().track) {
+            @let track = playerState().track;
+            <div class="current-track">
+                <h4>{{ track?.name }}</h4>
+                @if (isTrack(track)) {
+                    <p>{{ track.artists[0].name }}</p>
+                } @else if (isEpisode(track)) {
+                    <p>{{ track.show.name }}</p>
+                }
+                <div class="progress-bar">
+                    <div class="progress" [style.width.%]="(playerState().progress / playerState().duration) * 100"></div>
+                </div>
+                <div class="time-info">
+                    <span>{{ formatTime(playerState().progress) }}</span>
+                    <span>{{ formatTime(playerState().duration) }}</span>
+                </div>
+            </div>
+        }
+    </div>
+</section>

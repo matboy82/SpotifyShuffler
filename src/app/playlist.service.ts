@@ -12,28 +12,64 @@ export class PlaylistService {
 
   private sdk!: SpotifyApi;
   private playlists: PlaylistItem[] = [];
-  private tracks!: PlaylistedTrack<Track>[]
+  private tracks: PlaylistedTrack<Track>[] = [];
+  private shuffledTracks: PlaylistedTrack<Track>[] = [];
   private currentPlaylist: PlaylistItem = {} as PlaylistItem;
+  private _isShuffled = false;
+  
   public lists = signal(this.playlists);
   public songs = signal(this.tracks);
   public playlist = signal<PlaylistItem>(this.currentPlaylist);
+  
+  public isShuffled(): boolean {
+    return this._isShuffled;
+  }
 
   constructor(private spotifyService: SpotifyService) {
     this.sdk = this.spotifyService.getSdk();
    }
 
-  public getPlaylistTracks(playlistId: string) {
-    this.sdk.playlists.getPlaylistItems(playlistId).then((data) => {
-      console.log(data.items);
-      const newSongs = data.items as unknown as PlaylistedTrack<Track>[];
+  public resetState() {
+    this.tracks = [];
+    this.currentPlaylist = {} as PlaylistItem;
+    this.songs.set([]);
+    this.playlist.set({} as PlaylistItem);
+  }
+
+  public async getPlaylistTracks(playlistId: string) {
+    // Reset state before loading new tracks
+    this.resetState();
+    this._isShuffled = false;
+
+    try {
+      const data = await this.sdk.playlists.getPlaylistItems(playlistId);
+      const newSongs = data.items;
+      this.tracks = newSongs;
+      this.shuffledTracks = [];
       this.songs.set(newSongs);
-      this.getTrackInfo(newSongs[0].track.id);
-    });
+    } catch (error) {
+      console.error('Error loading playlist tracks:', error);
+      this.songs.set([]);
+    }
   }  
 
   public shuffleTracks(tracks: PlaylistedTrack<Track>[]): PlaylistedTrack<Track>[] {
-    console.log(tracks);
-    return this.shuffleArray(tracks);
+    if (!tracks || tracks.length === 0) return [];
+    
+    // Create a copy of the array to avoid modifying the original
+    const shuffled = [...tracks];
+    
+    // Fisher-Yates shuffle algorithm
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    this.shuffledTracks = shuffled;
+    this._isShuffled = true;
+    this.songs.set(shuffled);
+    
+    return shuffled;
   }
 
   private shuffleArray(array: PlaylistedTrack<Track>[]): PlaylistedTrack<Track>[] {

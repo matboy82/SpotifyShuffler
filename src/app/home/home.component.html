@@ -1,37 +1,16 @@
 
-<section class="hero">
-    <img width="200" height="200" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.SpjOSCvXUE406ZlyTxuPkwAAAA%26pid%3DApi&f=1&ipt=74b6c993accbbab4dfa209a2d2604f8c6d50cf97f5a0890526edbad72b0c3a8b&ipo=images" />
-    <div class="text">
-      <h1 class="title">{{ title }}</h1>
-      <p class="subtext">{{subtext}}</p>
-    </div>
-    <section class="buttons">
-      <app-search-playlists></app-search-playlists>
-      <div class="divider"></div>
-      <button mat-stroked-button color="primary" (click)="getPlaylist()">Get User Playlists</button>
-    </section>
-    @if(currentPlaylistInfo) {
-      <app-spotify-player [showTrackList]="false" [playlistId]="currentPlaylistInfo.id"></app-spotify-player>
-    }
-  </section>
+<app-hero [title]="title" [subtext]="subtext" (playlistsLoaded)="onPlaylistsLoaded($event)" (getPlaylist)="getPlaylist()" ></app-hero>
     
   <hr/>
   @if(currentPlaylistInfo) {
-    <section class="playing-info">
-      <h2>Playing:</h2>
-      <div>
-        <h5>{{currentPlaylistInfo.name}}</h5>
-        <h5>{{currentPlaylistInfo.description}}</h5>
-      </div>
-    </section>  
-    
+    <app-playing-info [currentPlaylistInfo]="currentPlaylistInfo"></app-playing-info>
+    <app-media-controls [currentPlaylistInfo]="currentPlaylistInfo" [currentDevice]="currentDevice()"></app-media-controls>
   }
   
   @defer (when playlists) {
     <section class="playlists">
-      @for (list of playlists; track list) {
+      @for (list of playlists; track trackByPlaylistId($index, list)) {
         <app-playlist-card [playlist]="list" (selectedPlaylistId)="selectedPlaylist($event)"></app-playlist-card>
       }
-       
     </section>
   }
