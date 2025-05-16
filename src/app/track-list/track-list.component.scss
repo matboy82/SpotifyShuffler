@@ -1,44 +1,126 @@
-section {
-  padding: 16px;
+.track-list {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 
-  h1 {
-    font-size: 24px;
+  h2 {
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 24px;
-    color: #ffffff;
+    margin-bottom: 1.5rem;
+    color: #1db954; // Spotify green
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #b3b3b3;
+  }
+
+  .tracks-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  mat-card {
+    transition: transform 0.2s ease-in-out;
+    background: #282828;
+    color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      transform: translateY(-4px);
+      background: #383838;
+      cursor: pointer;
+    }
+
+    img {
+      width: 100% !important;
+      height: 200px !important;
+      object-fit: cover;
+      margin: 0 !important;
+      border-radius: 0;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #282828;
+      color: #b3b3b3;
+    }
+
+    mat-card-content {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin: 0 !important;
+
+      mat-card-title {
+        font-size: 1rem;
+        font-weight: 500;
+        margin: 0 0 0.5rem 0 !important;
+        line-height: 1.4;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      mat-card-subtitle {
+        color: #b3b3b3;
+        font-size: 0.875rem;
+        margin: 0 !important;
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .debug-info {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #282828;
+    border-radius: 4px;
+    color: #b3b3b3;
+    font-family: monospace;
+    font-size: 0.875rem;
+
+    h3 {
+      margin-top: 0;
+      color: #1db954;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
   }
 }
 
-mat-card {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 12px !important;
-  
-  img {
-    width: 64px !important;
-    height: 64px !important;
-    border-radius: 4px;
-    margin-right: 16px;
+// Responsive adjustments
+@media (max-width: 768px) {
+  .tracks-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
+}
 
-  mat-card-content {
-    flex: 1;
-    margin: 0 !important;
-    
-    mat-card-title {
-      margin: 0 0 4px 0 !important;
-      line-height: 1.4 !important;
-    }
-
-    mat-card-subtitle {
-      margin: 0 !important;
-      line-height: 1.4 !important;
-    }
-  }
-
-  &:hover {
-    cursor: pointer;
+@media (max-width: 480px) {
+  .tracks-container {
+    grid-template-columns: 1fr;
   }
 }
