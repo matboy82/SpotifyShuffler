@@ -1,9 +1,11 @@
-import { Component, Input, OnInit, signal, effect } from '@angular/core';
+import { Component, Input, OnInit, signal, effect, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule, JsonPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlaylistTrack } from '../playlist.service';
+import { PlaybackService } from '../playback.service';
 
 @Component({
   selector: 'app-track-list',
@@ -13,8 +15,10 @@ import { PlaylistTrack } from '../playlist.service';
     MatCardModule, 
     MatIconModule, 
     MatButtonModule,
+    MatSnackBarModule,
     JsonPipe
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './track-list.component.html',
   styleUrls: ['./track-list.component.scss']
 })
@@ -27,6 +31,10 @@ export class TrackListComponent implements OnInit {
   
   protected _songs = signal<PlaylistTrack[]>([]);
   protected debug = signal<boolean>(true); // Enable debug by default for now
+  
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly playbackService = inject(PlaybackService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
     // Log when songs change
@@ -67,11 +75,27 @@ export class TrackListComponent implements OnInit {
   }
 
   /**
-   * Handles track click events
+   * Handles track click events. When a track is clicked, it starts playing that track
+   * and continues with the shuffled order from the playlist.
+   * 
+   * @param track - The track that was clicked
    */
-  onTrackClick(track: PlaylistTrack): void {
-    console.log('Track clicked:', track);
-    // TODO: Implement track playback using PlaybackService
+  async onTrackClick(track: PlaylistTrack): Promise<void> {
+    if (!track?.track?.id) {
+      console.warn('No valid track to play');
+      this.showError('Playback Error', 'Could not play the selected track: Invalid track data');
+      return;
+    }
+
+    try {
+      // Play the selected track
+      await this.playbackService.playTrack(track);
+      console.log('Now playing:', track.track.name);
+    } catch (error) {
+      console.error('Error playing track:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      this.showError('Playback Error', `Could not play track: ${errorMessage}`);
+    }
   }
 
   /**
@@ -86,5 +110,14 @@ export class TrackListComponent implements OnInit {
     if (img) {
       img.style.display = 'none';
     }
+  }
+
+  private showError(title: string, message: string): void {
+    this.snackBar.open(`${title}: ${message}`, 'Close', {
+      duration: 5000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
   }
 }

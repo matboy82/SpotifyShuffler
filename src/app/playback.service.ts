@@ -16,6 +16,11 @@ export class PlaybackService {
   private playingSignal = signal<boolean>(false);
   private pollInterval: number | undefined;
   private statePollingActive = false;
+  
+  // Track the current position in the playlist and the shuffled order
+  private currentTrackIndex = signal<number>(-1);
+  private shuffledTracks = signal<PlaylistTrack[]>([]);
+  private isShuffled = signal<boolean>(false);
 
   readonly currentDevice: Signal<Device | undefined> = computed(() => this.currentDeviceSignal());
   readonly playing: Signal<boolean> = computed(() => this.playingSignal());
@@ -86,7 +91,7 @@ export class PlaybackService {
     }
   }
 
-  async playTracks(): Promise<void> {
+  async playTracks(startFromBeginning: boolean = true): Promise<void> {
     // First try to get the current device
     let device = this.currentDevice();
     
@@ -123,51 +128,52 @@ export class PlaybackService {
         return;
       }
 
-      // If not already shuffled, shuffle the tracks
-      if (!this.playlistService.isShuffled()) {
-        console.log('Shuffling tracks');
+      // Initialize or update shuffled tracks if needed
+      if (this.shuffledTracks().length === 0 || !this.isShuffled()) {
         const shuffledSongs = this.playlistService.shuffleTracks([...songs]);
         if (!shuffledSongs || shuffledSongs.length === 0) {
           this.notification.error('Failed to shuffle tracks');
           return;
         }
-        // Use the shuffled songs for playback
-        songs = shuffledSongs;
-      } else {
-        // If already shuffled, get the current shuffled tracks from the service
-        songs = this.playlistService.songs();
+        this.shuffledTracks.set(shuffledSongs);
+        this.isShuffled.set(true);
       }
 
-      // Convert track IDs to Spotify URIs
-      const trackUris = songs
-        .filter(song => song.track?.id)
-        .map(song => `spotify:track:${song.track!.id}`);
-      
-      if (trackUris.length === 0) {
-        this.notification.error('The playlist does not contain any playable tracks');
+      // Reset track index if starting from beginning
+      if (startFromBeginning) {
+        this.currentTrackIndex.set(0);
+      }
+
+      // Get the current track to play
+      const currentTrack = this.getCurrentTrack();
+      if (!currentTrack?.track?.id) {
+        this.notification.error('No track to play');
         return;
       }
 
-      // Start playback with the track URIs using the correct parameter structure
+      // Start playback with the current track and remaining tracks in context
       try {
-        // Use type assertion to bypass the type checking for this specific call
-        const player = this.sdk.player as any;
-        // @ts-ignore - The SDK type definition expects a different parameter structure
-        await (player.startResumePlayback as any)(
+        const currentIndex = this.currentTrackIndex();
+        const tracks = this.isShuffled() ? this.shuffledTracks() : this.playlistService.songs();
+        const remainingTracks = tracks.slice(currentIndex).map(track => `spotify:track:${track.track?.id}`).filter(Boolean);
+        
+        if (remainingTracks.length === 0) {
+          this.notification.info('No tracks available to play');
+          return;
+        }
+        
+        await this.sdk.player.startResumePlayback(
           device.id,
           undefined,
-          trackUris, // Pass array of URIs directly
-          undefined,
-          0 // Start from the beginning of the first track
+          remainingTracks
         );
+        this.playingSignal.set(true);
+        await this.updatePlaybackState();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         this.notification.error(`Could not start playback: ${errorMessage}`);
         throw error;
       }
-
-      this.playingSignal.set(true);
-      await this.updatePlaybackState();
     } catch (error) {
       console.error('Error playing tracks:', error);
       throw error; // Re-throw to allow error handling in components
@@ -180,48 +186,21 @@ export class PlaybackService {
       return;
     }
 
-    // First try to get the current device
-    let device = this.currentDevice();
+    // Find the track in our shuffled tracks
+    const tracks = this.shuffledTracks();
+    const trackIndex = tracks.findIndex(t => t.track?.id === track.track?.id);
     
-    // If no device is selected, try to get available devices
-    if (!device?.id) {
-      const availableDevices = (await this.getAvailableDevices()).filter((d): d is Device & { id: string } => d.id !== null);
-      if (availableDevices.length > 0) {
-        // Try to find an active device first
-        const activeDevice = availableDevices.find(d => d.is_active);
-        if (activeDevice) {
-          this.setDevice(activeDevice);
-          device = this.currentDevice();
-        } else {
-          // If no active device but we have available devices, use the first one
-          this.setDevice(availableDevices[0]);
-          device = this.currentDevice();
-        }
-      }
-      
-      // If still no device, show error
-      if (!device?.id) {
-        this.notification.error(
-          'No Playback Device',
-          'Please make sure you have an active Spotify session on a device. Open the Spotify app on your device and try again.'
-        );
-        return;
-      }
+    if (trackIndex === -1) {
+      // If track not found in shuffled tracks, add it and update the index
+      this.shuffledTracks.update(current => [...current, track]);
+      this.currentTrackIndex.set(tracks.length);
+    } else {
+      // Set the current track index to the found track
+      this.currentTrackIndex.set(trackIndex);
     }
-
-    try {
-      const trackUri = `spotify:track:${track.track.id}`;
-      await this.sdk.player.startResumePlayback(
-        device.id,
-        undefined,
-        [trackUri] // Pass track URI directly as an array
-      );
-      this.playingSignal.set(true);
-      await this.updatePlaybackState();
-    } catch (error) {
-      console.error('Error playing track:', error);
-      throw error;
-    }
+    
+    // Play the track
+    await this.playTracks(false);
   }
 
   async pauseTrack(): Promise<void> {
@@ -241,34 +220,99 @@ export class PlaybackService {
       throw error;
     }
   }
+  
+  /**
+   * Gets the current track from the shuffled playlist
+   */
+  private getCurrentTrack(): PlaylistTrack | undefined {
+    const index = this.currentTrackIndex();
+    const tracks = this.shuffledTracks();
+    
+    if (index >= 0 && index < tracks.length) {
+      return tracks[index];
+    }
+    return undefined;
+  }
+  
+  /**
+   * Updates the current track index when the playlist changes
+   */
+  public updateTrackIndexes(originalIndexes: number[]): void {
+    if (!this.isShuffled()) return;
+    
+    const currentTrack = this.getCurrentTrack();
+    if (!currentTrack) return;
+    
+    // Find the new index of the current track in the updated playlist
+    const newIndex = originalIndexes.findIndex(id => 
+      currentTrack.track?.id === this.shuffledTracks()[id]?.track?.id
+    );
+    
+    if (newIndex !== -1) {
+      this.currentTrackIndex.set(newIndex);
+    }
+  }
 
   async nextTrack(): Promise<void> {
     const device = this.currentDevice();
     if (!device) {
-      alert('Start a device first');
+      this.notification.error('No Active Device', 'Please start a device first');
       return;
     }
 
     try {
-      await this.sdk.player.skipToNext(device.id as string);
-      await this.updatePlaybackState();
+      // Move to the next track in our shuffled playlist
+      const nextIndex = this.currentTrackIndex() + 1;
+      const tracks = this.shuffledTracks();
+      
+      if (nextIndex >= tracks.length) {
+        // Reached the end of the playlist
+        this.playingSignal.set(false);
+        this.currentTrackIndex.set(-1);
+        this.notification.info('Playback: Reached the end of the playlist');
+        return;
+      }
+
+      // Update the current track index
+      this.currentTrackIndex.set(nextIndex);
+      
+      // Play the next track
+      await this.playTracks(false);
+      
     } catch (error) {
       console.error('Error skipping to next track:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      this.notification.error('Playback Error', `Could not skip to next track: ${errorMessage}`);
     }
   }
 
   async previousTrack(): Promise<void> {
     const device = this.currentDevice();
     if (!device) {
-      alert('Start a device first');
+      this.notification.error('No Active Device', 'Please start a device first');
       return;
     }
 
     try {
-      await this.sdk.player.skipToPrevious(device.id as string);
-      await this.updatePlaybackState();
+      // Move to the previous track in our shuffled playlist
+      const prevIndex = this.currentTrackIndex() - 1;
+      
+      if (prevIndex < 0) {
+        // Already at the first track
+        this.notification.info('Playback: Already at the first track');
+        return;
+      }
+
+      // Update the current track index
+      this.currentTrackIndex.set(prevIndex);
+      
+      // Play the previous track
+      await this.playTracks(false);
+      
     } catch (error) {
       console.error('Error skipping to previous track:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      this.notification.error('Playback Error', `Could not skip to previous track: ${errorMessage}`);
     }
   }
 
@@ -294,12 +338,27 @@ export class PlaybackService {
     }
   }
 
-  async updatePlaybackState() {
+  async updatePlaybackState(): Promise<PlaybackState | null> {
     try {
       const state = await this.sdk.player.getPlaybackState();
       this.updatePlayingState(state);
+      
+      // If the track changed, update our current track index
+      if (state?.item?.type === 'track') {
+        const currentTrackId = state.item.id;
+        const currentIndex = this.shuffledTracks().findIndex(
+          t => t.track?.id === currentTrackId
+        );
+        
+        if (currentIndex !== -1 && currentIndex !== this.currentTrackIndex()) {
+          this.currentTrackIndex.set(currentIndex);
+        }
+      }
+      
+      return state;
     } catch (error) {
       console.error('Error getting playback state:', error);
+      return null;
     }
   }
 
