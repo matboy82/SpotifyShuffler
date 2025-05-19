@@ -43,7 +43,7 @@ export class MediaControlsComponent implements OnInit {
   }
 
   playTracks() {
-    void this.playbackService.playTracks();
+    void this.playbackService.playTrack();
   }
 
   pauseTrack() {

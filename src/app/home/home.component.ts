@@ -105,7 +105,7 @@ export class HomeComponent implements OnInit {
         
         // If we have a device, we can start playback
         if (this.currentDevice()) {
-          await this.playbackService.playTracks();
+          await this.playbackService.playTrack();
         }
       }
     } catch (error) {

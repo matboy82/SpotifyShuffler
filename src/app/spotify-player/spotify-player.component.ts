@@ -54,7 +54,7 @@ export class SpotifyPlayerComponent {
             this.playlistService.shuffleTracks(this.playlistService.songs());
             // Auto-play the first track if we have a device
             if (this.currentDevice?.id) {
-              await this.playbackService.playTracks();
+              await this.playbackService.playTrack();
             }
           }
         } catch (error) {
@@ -78,7 +78,7 @@ export class SpotifyPlayerComponent {
         
         // If we have songs but not playing, start playback
         if (this.playlistService.songs().length > 0 && !this.playbackService.playing()) {
-          this.playbackService.playTracks().catch(console.error);
+          this.playbackService.playTrack().catch(console.error);
         }
       }
     });

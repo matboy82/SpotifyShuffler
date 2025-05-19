@@ -27,7 +27,9 @@ export class GlobalErrorHandlerService implements ErrorHandler {
       const commonErrors = [
         'No device selected',
         'No playlist selected',
-        'No tracks available'
+        'No tracks available',
+        'Unexpected token',
+        'is not valid JSON'
       ];
       
       return commonErrors.some(msg => error.message.includes(msg));
