@@ -8,6 +8,33 @@ html, body {
   font-family: 'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 }
 
+/* Snackbar notifications */
+.mat-mdc-snack-bar-container {
+  &.notification-error {
+    --mdc-snackbar-container-color: #f44336;
+    --mat-mdc-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
+  }
+
+  &.notification-warning {
+    --mdc-snackbar-container-color: #ff9800;
+    --mat-mdc-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
+  }
+
+  &.notification-success {
+    --mdc-snackbar-container-color: #4caf50;
+    --mat-mdc-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
+  }
+
+  &.notification-info {
+    --mdc-snackbar-container-color: #2196f3;
+    --mat-mdc-snack-bar-button-color: #fff;
+    --mdc-snackbar-supporting-text-color: #fff;
+  }
+}
+
 /* Material overrides */
 .mat-mdc-card {
   --mdc-elevated-card-container-color: #282828;

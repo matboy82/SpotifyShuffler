@@ -2,6 +2,7 @@ import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import { SpotifyService } from './spotify.service';
 import { Playlist, PlaylistedTrack, SpotifyApi, Track, SimplifiedAlbum } from '@spotify/web-api-ts-sdk';
 import { PlaylistItem } from './interfaces/playlist-item';
+import { NotificationService } from './services/notification.service';
 
 export interface PlaylistTrack {
   track?: {
@@ -35,9 +36,12 @@ export class PlaylistService {
     return this._isShuffled;
   }
 
-  constructor(private spotifyService: SpotifyService) {
+  constructor(
+    private spotifyService: SpotifyService,
+    private notification: NotificationService
+  ) {
     this.sdk = this.spotifyService.getSdk();
-   }
+  }
 
   public resetState() {
     this.tracks = [];
@@ -46,11 +50,14 @@ export class PlaylistService {
     this.playlist.set({} as PlaylistItem);
   }
 
-  public async getPlaylistTracks(playlistId: string): Promise<void> {
+  public async getPlaylistTracks(playlistId: string): Promise<PlaylistTrack[]> {
     if (!playlistId) {
-      console.error('No playlist ID provided');
-      this.songs.set([]);
-      return;
+      console.warn('No playlist ID provided');
+      return [];
+    }
+    if (!playlistId) {
+      this.notification.error('No playlist selected', 'Please select a playlist to load tracks');
+      return [];
     }
 
     // Reset state before loading new tracks
@@ -65,7 +72,7 @@ export class PlaylistService {
       if (!data?.items) {
         console.error('Invalid playlist data received:', data);
         this.songs.set([]);
-        return;
+        return [];
       }
 
       // Transform the data to match our PlaylistTrack interface
@@ -92,16 +99,22 @@ export class PlaylistService {
       // Update the signal with the new data
       this.songs.set([...newSongs]);
       
+      return newSongs;
     } catch (error) {
-      console.error('Error loading playlist tracks:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load playlist';
+      this.notification.error('Failed to load playlist', errorMessage);
       this.songs.set([]);
+      return [];
     }
   }  
 
   public shuffleTracks(tracks: PlaylistTrack[]): PlaylistTrack[] {
-    if (!tracks || tracks.length === 0) return [];
+    if (!tracks || tracks.length === 0) {
+      console.warn('No tracks to shuffle');
+      return [];
+    }
     
-    // Create a copy of the array to avoid modifying the original
+    // Create a copy of the tracks to avoid modifying the original array
     const shuffled = [...tracks];
     
     // Fisher-Yates shuffle algorithm
@@ -110,9 +123,8 @@ export class PlaylistService {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     
-    this.shuffledTracks = [...shuffled];
     this._isShuffled = true;
-    console.log('setting shuffled tracks');
+    this.shuffledTracks = [...shuffled];
     this.songs.set([...shuffled]);
     
     return [...shuffled];
@@ -140,10 +152,29 @@ export class PlaylistService {
   public searchPlaylists(searchTerm: string) {
     //searchtypes: 'album', 'track','artist', 'show', 'episode'
     this.sdk.search(searchTerm, ['playlist'], undefined, 20).then((results) => {
-      const newLists = results.playlists.items as unknown as PlaylistItem[];
-      this.lists.set(newLists);
+      if (!results?.playlists?.items) {
+        console.warn('No playlists found in search results');
+        this.lists.set([]);
+        return;
+      }
+      
+      // Filter out invalid playlists
+      const validPlaylists = results.playlists.items
+        .filter((playlist: any) => 
+          playlist?.id && 
+          playlist?.name && 
+          Array.isArray(playlist.images) && 
+          playlist.images.length > 0
+        ) as unknown as PlaylistItem[];
+      
+      console.log('Filtered search results:', validPlaylists.length, 'of', results.playlists.items.length);
+      this.lists.set(validPlaylists);
+    }).catch(error => {
+      console.error('Error searching playlists:', error);
+      this.notification.error('Search failed', 'Failed to search for playlists');
+      this.lists.set([]);
     });
-  }  
+  }
 
   public getTrackInfo(trackId: string) {
     this.sdk.tracks.get(trackId).then((data) => {

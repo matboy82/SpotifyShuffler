@@ -1,0 +1,24 @@
+<h2 mat-dialog-title class="error-title">
+  <mat-icon color="warn" class="error-icon">error_outline</mat-icon>
+  {{ data.title }}
+</h2>
+
+<mat-dialog-content>
+  <p class="error-message">{{ data.message }}</p>
+  
+  <mat-expansion-panel *ngIf="data.details" class="details-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Technical Details
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <pre class="error-details">{{ data.details }}</pre>
+  </mat-expansion-panel>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close color="primary">
+    <mat-icon>close</mat-icon>
+    Close
+  </button>
+</mat-dialog-actions>

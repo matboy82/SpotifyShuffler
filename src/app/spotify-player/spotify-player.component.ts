@@ -44,17 +44,42 @@ export class SpotifyPlayerComponent {
 
   constructor() {
     // Load tracks when playlist ID changes
-    effect(() => {
-      if (this.playlistId()) {
-        this.playlistService.getPlaylistTracks(this.playlistId());
+    effect(async () => {
+      const playlistId = this.playlistId();
+      if (playlistId) {
+        try {
+          await this.playlistService.getPlaylistTracks(playlistId);
+          // Auto-shuffle when playlist is loaded
+          if (this.playlistService.songs().length > 0) {
+            this.playlistService.shuffleTracks(this.playlistService.songs());
+            // Auto-play the first track if we have a device
+            if (this.currentDevice?.id) {
+              await this.playbackService.playTracks();
+            }
+          }
+        } catch (error) {
+          console.error('Error loading playlist tracks:', error);
+        }
       }
     });
 
     // Get active device and update playback service
     this.deviceService.getDevices().subscribe((devices) => {
       if (devices.length > 0) {
-        this.currentDevice = devices[0];
+        // Try to find an active device first
+        const activeDevice = devices.find(d => d.is_active);
+        if (activeDevice) {
+          this.currentDevice = activeDevice;
+        } else {
+          // Fall back to the first available device
+          this.currentDevice = devices[0];
+        }
         this.playbackService.setDevice(this.currentDevice);
+        
+        // If we have songs but not playing, start playback
+        if (this.playlistService.songs().length > 0 && !this.playbackService.playing()) {
+          this.playbackService.playTracks().catch(console.error);
+        }
       }
     });
 
@@ -64,8 +89,12 @@ export class SpotifyPlayerComponent {
     });
   }
 
-  playerInit() {
-    this.playbackService.playerInit();
+  async playerInit() {
+    try {
+      await this.playbackService.playerInit();
+    } catch (error) {
+      console.error('Error initializing player:', error);
+    }
   }
 
   pauseTrack() {

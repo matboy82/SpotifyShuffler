@@ -20,7 +20,9 @@ import { PlaylistTrack } from '../playlist.service';
 })
 export class TrackListComponent implements OnInit {
   @Input({ required: true }) set songs(value: PlaylistTrack[] | null | undefined) {
-    this._songs.set(Array.isArray(value) ? value : []);
+    const newSongs = Array.isArray(value) ? [...value] : [];
+    console.log('Songs input changed, count:', newSongs.length);
+    this._songs.set(newSongs);
   }
   
   protected _songs = signal<PlaylistTrack[]>([]);
@@ -31,6 +33,9 @@ export class TrackListComponent implements OnInit {
     effect(() => {
       const songs = this._songs();
       console.log('Songs updated:', songs.length);
+      if (songs.length > 0) {
+        console.log('First song ID:', songs[0].track?.id);
+      }
     });
   }
 

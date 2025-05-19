@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
-import { SpotifyApi, AuthorizationCodeWithPKCEStrategy } from '@spotify/web-api-ts-sdk';
+import { Injectable, inject } from '@angular/core';
+import { SpotifyApi, AuthorizationCodeWithPKCEStrategy, type AccessToken } from '@spotify/web-api-ts-sdk';
+import { NotificationService } from './services/notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -7,10 +8,14 @@ import { SpotifyApi, AuthorizationCodeWithPKCEStrategy } from '@spotify/web-api-
 /**
  * Sets up the Spotify SDK and returns the instance.
  */
+@Injectable({
+  providedIn: 'root'
+})
 export class SpotifyService {
   private clientId = '7ca110f3b9934a4e9889f3a85fef87b3';
   private clientSecret = 'add2833f0c8b47918f1f38d250353dea';
   sdk!: SpotifyApi;
+  private notification = inject(NotificationService);
   
   constructor() { 
     const scope = [
@@ -46,13 +51,28 @@ export class SpotifyService {
     this.sdk = new SpotifyApi(strategy);
   }
 
-  authenticate() {
-    this.sdk.authenticate().then((data) => {
-      localStorage.setItem('access_token', data.accessToken.toString());
-    });
+  async authenticate(): Promise<boolean> {
+    try {
+      const data = await this.sdk.authenticate();
+      if (data && data.authenticated) {
+        // The SDK handles token storage internally
+        this.notification.success('Successfully connected to Spotify');
+        return true;
+      }
+      this.notification.error('Authentication failed', 'Could not authenticate with Spotify');
+      return false;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to authenticate with Spotify';
+      this.notification.error('Authentication failed', errorMessage);
+      return false;
+    }
   }
 
   getSdk(): SpotifyApi {
+    if (!this.sdk) {
+      this.notification.error('Spotify SDK not initialized', 'Please try refreshing the page');
+      throw new Error('Spotify SDK not initialized');
+    }
     return this.sdk;
   }
 }

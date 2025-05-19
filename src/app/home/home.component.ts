@@ -51,30 +51,62 @@ export class HomeComponent implements OnInit {
 
    getPlaylist() {
     this.sdk.playlists.getUsersPlaylists('r3b00tz').then((data: any) => {
-      this.playlists = data.items;
+      // Filter out any playlists that don't have required properties
+      const validPlaylists = data.items.filter((playlist: any) => 
+        playlist?.id && 
+        playlist?.name && 
+        Array.isArray(playlist.images) && 
+        playlist.images.length > 0
+      );
+      
+      console.log('Filtered playlists:', validPlaylists.length, 'of', data.items.length);
+      this.playlists = validPlaylists;
+    }).catch(error => {
+      console.error('Error loading playlists:', error);
+      this.playlists = [];
     });   
   }
 
   async selectedPlaylist(playlistId: string) {
+    if (!playlistId) {
+      console.warn('No playlist ID provided');
+      return;
+    }
+    
     this.playlistId = playlistId;
 
-    // Find and set the current playlist
-    this.currentPlaylistInfo = this.playlists.find((p) => p.id === playlistId)!;
-    this.playlistService.playlist.set(this.currentPlaylistInfo);
-
     try {
-      // Load all tracks
-      const tracks = await this.sdk.playlists.getPlaylistItems(playlistId);
-      if (tracks.items.length > 0) {
+      // Find and set the current playlist
+      this.currentPlaylistInfo = this.playlists.find((p) => p.id === playlistId)!;
+      if (!this.currentPlaylistInfo) {
+        console.error('Playlist not found in local state');
+        return;
+      }
+      
+      // Update the playlist service with the selected playlist
+      this.playlistService.playlist.set(this.currentPlaylistInfo);
+      
+      // Load tracks using the playlist service
+      const tracks = await this.playlistService.getPlaylistTracks(playlistId);
+      
+      if (tracks && tracks.length > 0) {
+        // Update the playlist info with the loaded tracks
         this.currentPlaylistInfo = {
           ...this.currentPlaylistInfo,
           tracks: {
-            href: tracks.href,
-            items: tracks.items,
-            total: tracks.total
+            href: `spotify:playlist:${playlistId}`,
+            items: tracks as any, // Cast to any to match the expected type
+            total: tracks.length
           }
         };
+        
+        // Update the playlist in the service
         this.playlistService.playlist.set(this.currentPlaylistInfo);
+        
+        // If we have a device, we can start playback
+        if (this.currentDevice()) {
+          await this.playbackService.playTracks();
+        }
       }
     } catch (error) {
       console.error('Error loading playlist tracks:', error);
